@@ -1,6 +1,6 @@
 package hangman;
 
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.Scanner;
 
 /**
@@ -23,10 +23,6 @@ public class Hangman {
     private static char[] goodGuesses;
     private static int fails;   // number of bad guesses
 
-    // From ASCII table
-    private static int lowercaser = 32;
-    private static int uppercaser = -32;
-
     public static void main (String[] args) {
         init();
         run();
@@ -36,7 +32,12 @@ public class Hangman {
      * Initialise the game.
      */
     private static void init () {
-        lexicon = new HangmanLexicon();
+        try {
+            lexicon = new HangmanLexicon("HangmanLexicon.txt");
+        } catch (IOException e) {
+            System.err.println("Error reading lexicon file!");
+            return;
+        }
         badGuesses = new char[26];
         goodGuesses = new char[26];
         fails = 0;
@@ -179,7 +180,6 @@ public class Hangman {
         sb.setLength(Math.max(0, sb.length() - 1));
         return sb.toString();
     }
-
     /**
      * Get the player input as a String.
      * @return Player input as a String.
