@@ -41,9 +41,9 @@ public class LongestWordSubsequence {
      * For each set in the power set of s, we check if it's in the set of
      * words (linear search).
      *
-     * @param s
-     * @param d
-     * @return
+     * @param s String to look for subsequence in.
+     * @param d String array representing the set of words.
+     * @return A longest word in d that is a subsequence of s.
      */
     private static String longestWordSubsequence1 (String s, String[] d) {
         // The first idea is to enumerate through the power set of s
@@ -62,7 +62,7 @@ public class LongestWordSubsequence {
      *
      * @param s String to check for containment.
      * @param d Array of strings to check against.
-     * @return Boolea stating whether or not s is in d.
+     * @return Boolean stating whether or not s is in d.
      */
     private static boolean isInArray (String s, String[] d) {
         for (String ss : d) {
