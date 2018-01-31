@@ -41,6 +41,10 @@ public class LongestWordSubsequence {
      * For each set in the power set of s, we check if it's in the set of
      * words (linear search).
      *
+     * Improvements:
+     *  - Process the set of words into a hashtable or prefix tree to at
+     *  least speed up the look-up process.
+     *
      * @param s String to look for subsequence in.
      * @param d String array representing the set of words.
      * @return A longest word in d that is a subsequence of s.
@@ -93,14 +97,119 @@ public class LongestWordSubsequence {
         return sb.toString();
     }
 
+    /**
+     * Second idea converting the set of words into a tree and going through
+     * the string, "expanding" into the tree as we go.
+     *
+     * This solution is not good because when expanding, we are essentially
+     * creating a virtual tree juxtaposed on top of the original one. But for
+     * each character in s, we must check through all the leaf nodes of this
+     * virtual tree to see if its corresponding node in the original tree has
+     * a child corresponding to the character, then expand the virtual tree to
+     * cover that.
+     * The number of nodes in the tree is 26^L where L is the length of a
+     * longest word in d. So this is:
+     *      O(s.length() * 26^L)
+     *      
+     * Improvements:
+     *  - Consider a different representation of the set of words and how
+     *  we can design it to benefit our task.
+     *  - Or consider a different approach to the problem entirely.
+     *
+     * @param s String to look for subsequence in.
+     * @param d String array representing the set of words.
+     * @return A longest word in d that is a subsequence of s.
+     */
     private static String longestWordSubsequence2 (String s, String[] d) {
         // Consider processing d into a tree of max breadth 26 and max depth
         // equal to the longest word in d.
         // Each node contains a boolean to mark if it is the end of a word
         // in d.
         // Then loop through each char in s and "expand" through the tree.
-        
-        return s;
+        WordTree tree = processArray(d);
+        List<WordTree> expansion = new ArrayList<>();
+        expansion.add(tree);
+        String candidate = "";
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            for (int j = 0; j < expansion.size(); j++) {
+                WordTree t = expansion.get(j);
+                if (t.hasAsNext(c)) {
+                    WordTree child = t.getChild(c);
+                    expansion.add(child);
+                    if (child.isAWord() && child.getSubWord().length() > candidate.length()) {
+                        candidate = child.getSubWord();
+                    }
+                }
+            }
+        }
+        return candidate;
+    }
+    /**
+     * WordTree class for the set of words.
+     */
+    private static class WordTree {
+        private WordTree parent;
+        private Map<Character,WordTree> children;
+        private StringBuilder subWord;
+        private boolean wordMark;
+        WordTree () {
+            children = new HashMap<>();
+            subWord = new StringBuilder();
+            wordMark = false;
+        }
+        void setParent (WordTree parent) {
+            this.parent = parent;
+        }
+        void addChild (char c) {
+            if (!children.containsKey(c)) {
+                WordTree child = new WordTree();
+                child.setParent(this);
+                child.addToSubWord(c);
+                children.put(c, child);
+            }
+        }
+        boolean hasAsNext (char c) {
+            return children.containsKey(c);
+        }
+        WordTree getChild (char c) {
+            if (children.containsKey(c)) {
+                return children.get(c);
+            }
+            return null;
+        }
+        boolean isAWord () {
+            return wordMark;
+        }
+        void markWord () {
+            wordMark = true;
+        }
+        String getSubWord () {
+            return subWord.toString();
+        }
+        void addToSubWord (char c) {
+            subWord.append(parent.getSubWord());
+            subWord.append(c);
+        }
+    }
+    /**
+     * Process a set of words into WordTree structure.
+     *
+     * @param d String array containing the words to be processed.
+     * @return WordTree representing the set of words.
+     */
+    private static WordTree processArray (String[] d) {
+        WordTree root = new WordTree();
+        for (String word : d) {
+            WordTree node = root;
+            for (int i = 0; i < word.length(); i++) {
+                char c = word.charAt(i);
+                node.addChild(c);
+                node = node.getChild(c);
+            }
+            node.markWord();
+        }
+        return root;
     }
 
     public static void main (String[] args) {
